@@ -1,0 +1,126 @@
+@use 'variables' as *;
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-white font-sans text-slate-700 antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-display text-brand-green;
+  }
+
+  :focus-visible {
+    outline: 2px solid $gold;
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  .container-site {
+    @apply mx-auto w-full max-w-site px-4 sm:px-6 lg:px-8;
+  }
+
+  // Signature gold-over-green rule used at the foot of every brochure page
+  .brand-rule {
+    background: linear-gradient(to bottom, $green 0 45%, $sand 45% 100%);
+    height: 0.75rem;
+  }
+
+  .section-title {
+    @apply flex items-center gap-4 font-display text-sm font-bold uppercase tracking-wider text-brand-green sm:text-base;
+
+    &::after {
+      content: '';
+      flex: 1;
+      height: 2px;
+      background: $sand;
+    }
+  }
+
+  .icon-badge {
+    @apply flex shrink-0 items-center justify-center rounded-full bg-white;
+    border: 3px solid $sand;
+  }
+
+  .card {
+    @apply rounded-2xl bg-brand-mint;
+  }
+
+  // Bottom sand bar under outcome / assessment cards
+  .card-underline {
+    position: relative;
+
+    &::after {
+      content: '';
+      position: absolute;
+      left: 6%;
+      right: 6%;
+      bottom: 0;
+      height: 5px;
+      background: $sand;
+    }
+  }
+
+  .btn {
+    @apply inline-flex items-center gap-2 rounded-lg px-5 py-3 font-display text-sm font-semibold transition-colors;
+  }
+
+  .btn-primary {
+    @apply btn bg-brand-green text-white hover:bg-brand-deep disabled:cursor-wait disabled:opacity-70;
+  }
+
+  .form-input {
+    @apply block w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm text-slate-800 transition-colors;
+
+    &:focus {
+      @apply border-brand-green outline-none;
+      box-shadow: 0 0 0 3px rgba($sand, 0.45);
+    }
+
+    &[aria-invalid='true'] {
+      @apply border-red-600;
+    }
+  }
+
+  .btn-outline {
+    @apply btn border-2 border-brand-sand text-white hover:bg-brand-sand hover:text-brand-deep;
+  }
+
+  // Chevron arrows on the "Engage" step
+  .chevron {
+    clip-path: polygon(0 0, calc(100% - 2.5rem) 0, 100% 50%, calc(100% - 2.5rem) 100%, 0 100%, 2.5rem 50%);
+
+    &:first-child {
+      clip-path: polygon(0 0, calc(100% - 2.5rem) 0, 100% 50%, calc(100% - 2.5rem) 100%, 0 100%);
+    }
+
+    @media (max-width: 767px) {
+      &,
+      &:first-child {
+        clip-path: polygon(0 0, 100% 0, 100% calc(100% - 1rem), 50% 100%, 0 calc(100% - 1rem));
+      }
+    }
+  }
+}
+
+.page-hero {
+  @apply bg-brand-green text-white;
+  border-bottom: 6px solid $sand;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
