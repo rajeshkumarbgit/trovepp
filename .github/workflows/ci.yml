@@ -1,0 +1,27 @@
+# Checks every push to dev and every pull request into master.
+name: CI
+
+on:
+  push:
+    branches: [dev]
+  pull_request:
+    branches: [master]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      # tsc -b (type-check) + vite build
+      - run: npm run build
+
+      - name: Lint PHP
+        run: for f in public/*.php; do php -l "$f"; done

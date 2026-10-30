@@ -1,0 +1,67 @@
+# Builds master and uploads dist/ to the production host over FTPS.
+#
+# Repository secrets (Settings -> Secrets and variables -> Actions):
+#   FTP_SERVER            e.g. ftp.trovepp.in
+#   FTP_USERNAME
+#   FTP_PASSWORD
+#   ENQUIRY_TOKEN_SECRET  value of TOKEN_SECRET in public/enquiry-secret.php
+# Optional repository variable:
+#   FTP_SERVER_DIR        remote folder, default ./public_html/
+name: Deploy to production
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+concurrency:
+  group: production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Lint PHP
+        run: for f in public/*.php; do php -l "$f"; done
+
+      # enquiry-secret.php is not in git; recreate it so the build copies it into dist/
+      - name: Write enquiry secret
+        env:
+          TOKEN_SECRET: ${{ secrets.ENQUIRY_TOKEN_SECRET }}
+        run: |
+          if ! [[ "$TOKEN_SECRET" =~ ^[0-9a-f]{32,}$ ]]; then
+            echo "ENQUIRY_TOKEN_SECRET is missing or not a hex string" >&2
+            exit 1
+          fi
+          cat > public/enquiry-secret.php <<EOF
+          <?php
+          if (!defined('TROVE_ENQUIRY')) {
+              http_response_code(404);
+              exit;
+          }
+
+          const TOKEN_SECRET = '$TOKEN_SECRET';
+          EOF
+
+      - run: npm run build
+
+      - name: Upload to server
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftps
+          local-dir: ./dist/
+          server-dir: ${{ vars.FTP_SERVER_DIR || './public_html/' }}
